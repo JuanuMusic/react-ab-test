@@ -12,6 +12,25 @@ function simpleHash(str: string): number {
   return hash;
 }
 
+// Generate a consistent identifier for the current session if none is provided
+function getSessionIdentifier(): string {
+  // Check if we're in the browser environment
+  if (typeof window !== 'undefined') {
+    // Get or create a session identifier from localStorage
+    let sessionId = localStorage.getItem('PUSHTELL-SESSION-ID');
+    if (!sessionId) {
+      // Create a new random session ID if none exists
+      sessionId = Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('PUSHTELL-SESSION-ID', sessionId);
+    }
+    return sessionId;
+  }
+
+  // For server-side rendering, use a fixed seed for initial render
+  // This will be replaced by the real sessionId on the client
+  return 'server-render-seed';
+}
+
 const calculateVariant = (
   experimentName: string,
   userIdentifier?: string
@@ -40,22 +59,29 @@ const calculateVariant = (
   const weightSum = weights.reduce((a: number, b: number): number => {
     return a + b;
   }, 0);
-  // A random number between 0 and weightSum
-  let weightedIndex =
-    typeof userIdentifier === 'string'
-      ? Math.abs(simpleHash(userIdentifier) % weightSum) // Use simpleHash
-      : Math.floor(Math.random() * weightSum);
+
+  // Use the provided userIdentifier or generate a consistent session identifier
+  const identifier = userIdentifier || getSessionIdentifier();
+
+  // A consistent value based on the identifier
+  const weightedIndex = Math.abs(
+    simpleHash(identifier + experimentName) % weightSum
+  );
+
   // Iterate through the sorted weights, and deduct each from the weightedIndex.
   // If weightedIndex drops < 0, select the variant. If weightedIndex does not
   // drop < 0, default to the last variant in the array that is initially assigned.
   let selectedVariant = variants[variants.length - 1];
+  let remainingWeight = weightedIndex;
+
   for (let index = 0; index < weights.length; index++) {
-    weightedIndex -= weights[index];
-    if (weightedIndex < 0) {
+    remainingWeight -= weights[index];
+    if (remainingWeight < 0) {
       selectedVariant = variants[index];
       break;
     }
   }
+
   emitter.setActiveVariant(experimentName, selectedVariant);
   return selectedVariant;
 };
@@ -68,16 +94,18 @@ export default (
   if (typeof userIdentifier === 'string') {
     return calculateVariant(experimentName, userIdentifier);
   }
-  const activeValue = emitter.getActiveVariant(experimentName);
-  if (typeof activeValue === 'string') {
-    return activeValue;
+  // Check if there's already an active variant for this experiment
+  const activeVariant = emitter.getActiveVariant(experimentName);
+  if (activeVariant) {
+    // Return the existing active variant if one exists
+    return activeVariant;
   }
   const storedValue = store.getItem('PUSHTELL-' + experimentName);
-  if (typeof storedValue === 'string') {
+  if (storedValue) {
     emitter.setActiveVariant(experimentName, storedValue, true);
     return storedValue;
   }
-  if (typeof defaultVariantName === 'string') {
+  if (defaultVariantName) {
     emitter.setActiveVariant(experimentName, defaultVariantName);
     return defaultVariantName;
   }
