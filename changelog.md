@@ -1,3 +1,6 @@
+# 4.0.4
+Fixed error on Server Side rendering hydration issues.
+
 # 4.0.3
 Added console debugging to know store used.
 

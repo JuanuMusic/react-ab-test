@@ -23,7 +23,7 @@
       "types": "./lib/index.d.ts"
     }
   },
-  "version": "4.0.3",
+  "version": "4.0.4",
   "description": "A/B testing React components and debug tools. Isomorphic with a simple, universal interface. Well documented and lightweight. Tested in popular browsers and Node.js. Includes helpers for Mixpanel and Segment.com.",
   "directories": {
     "test": "test"
