@@ -1,7 +1,10 @@
-# A/B Testing React Components
-
 [![NPM version](https://badge.fury.io/js/%40juanu%2Freact-ab-test.svg)](https://badge.fury.io/js/%40juanu%2Freact-ab-test)
 [![NPM Downloads](https://img.shields.io/npm/dm/@juanu/react-ab-test.svg?style=flat)](https://www.npmjs.com/package/@juanu/react-ab-test)
+
+# A/B Testing React Components
+
+An updated version for the `reac-ab-test` library compatible with React 19.
+
 
 Wrap components in [`<Variant />`](#variant-) and nest in [`<Experiment />`](#experiment-). A variant is chosen randomly and saved to local storage.
 
