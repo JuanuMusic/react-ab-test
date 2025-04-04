@@ -3,7 +3,7 @@ import calculateActiveVariant from './calculateActiveVariant';
 
 // Define interface for event listeners
 interface Listener {
-  callback: (...args: unknown[]) => void;
+  callback: EventCallback;
   remove: () => void;
 }
 
@@ -15,15 +15,13 @@ type ActiveVariantCallback = (
 ) => void;
 type PlayCallback = (experimentName: string, variantName: string) => void;
 type WinCallback = (experimentName: string, variantName: string) => void;
+type EventCallback = (...args: unknown[]) => void;
 
 // Simple EventEmitter implementation to replace fbemitter
 class SimpleEventEmitter {
   private listeners: Record<string, Listener[]> = {};
 
-  addListener(
-    eventType: string,
-    callback: (...args: unknown[]) => void
-  ): Listener {
+  addListener(eventType: string, callback: EventCallback): Listener {
     if (!this.listeners[eventType]) {
       this.listeners[eventType] = [];
     }
