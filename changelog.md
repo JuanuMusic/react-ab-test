@@ -1,3 +1,6 @@
+# 4.0.3
+Added console debugging to know store used.
+
 # 4.0.2
 The store now has a cookie-based implementation that will work in both client and server environments where cookies are supported. The implementation has this priority:
 - Cookies - used when document.cookie is available (works for both client and server with cookie access)

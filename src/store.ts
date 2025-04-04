@@ -56,9 +56,11 @@ const noopStore: Store = {
 
 // Determine which store to use
 if (typeof document !== 'undefined' && 'cookie' in document) {
+  console.log('using cookie store');
   // Use cookies if available (works for both client and server with cookies)
   store = createCookieStore();
 } else if (typeof window !== 'undefined' && 'localStorage' in window) {
+  console.log('using localStorage store');
   try {
     const key = '__pushtell_react__';
     window.localStorage.setItem(key, key);
@@ -72,6 +74,7 @@ if (typeof document !== 'undefined' && 'cookie' in document) {
     store = noopStore;
   }
 } else {
+  console.log('using memory store');
   // Use memory store for server-side rendering
   store = createMemoryStore();
 }
