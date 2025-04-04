@@ -1,12 +1,16 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
-import Experiment from '../../src/Experiment.jsx';
-import Variant from '../../src/Variant.jsx';
-import emitter from '../../src/emitter.jsx';
+import Experiment from '../../src/Experiment';
+import Variant from '../../src/Variant';
+import emitter from '../../src/emitter';
 import { v4 as UUID } from 'uuid';
 
-const renderApp = (experimentName, variantNames, userIdentifier) => {
+const renderApp = (
+  experimentName: string,
+  variantNames: string[],
+  userIdentifier?: string
+) => {
   return () => (
     <Experiment name={experimentName} userIdentifier={userIdentifier}>
       {variantNames.map((name) => {
@@ -41,7 +45,7 @@ describe('Experiment', () => {
   it('should choose the same variant when a user identifier is defined.', () => {
     const userIdentifier = UUID();
     const experimentName = UUID();
-    const variantNames = [];
+    const variantNames: string[] = [];
     for (let i = 0; i < 100; i++) {
       variantNames.push(UUID());
     }
@@ -49,14 +53,15 @@ describe('Experiment', () => {
     const App = renderApp(experimentName, variantNames, userIdentifier);
 
     const result = ReactDOMServer.renderToString(<App />);
-    const chosenVariant = result.match(/"(variant-[0-9a-zA-Z-]+)"/i)[1];
+    const match = result.match(/"(variant-[0-9a-zA-Z-]+)"/i);
+    const chosenVariant = match ? match[1] : null;
     expect(chosenVariant).toBeDefined();
 
-    expect(result.indexOf(chosenVariant)).not.toEqual(-1);
+    expect(result.indexOf(chosenVariant as string)).not.toEqual(-1);
     for (let i = 0; i < 100; i++) {
       emitter._reset();
       const res = ReactDOMServer.renderToString(<App />);
-      expect(res.indexOf(chosenVariant)).not.toEqual(-1);
+      expect(res.indexOf(chosenVariant as string)).not.toEqual(-1);
     }
   });
 
@@ -64,7 +69,7 @@ describe('Experiment', () => {
     const userIdentifier = UUID();
     const user2Identifier = UUID();
     const experimentName = UUID();
-    const variantNames = [];
+    const variantNames: string[] = [];
     for (let i = 0; i < 100; i++) {
       variantNames.push(UUID());
     }

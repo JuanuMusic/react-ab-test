@@ -1,11 +1,11 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 import { v4 as UUID } from 'uuid';
-import { mount } from 'enzyme';
+import { renderWithWrapper } from '../test-utils';
+import { act } from '@testing-library/react';
 
-import Experiment from '../../src/Experiment.jsx';
-import Variant from '../../src/Variant.jsx';
-import emitter from '../../src/emitter.jsx';
+import Experiment from '../../src/Experiment';
+import Variant from '../../src/Variant';
+import emitter from '../../src/emitter';
 
 describe('Experiment', function () {
   afterEach(function () {
@@ -14,12 +14,12 @@ describe('Experiment', function () {
 
   it('should choose a version', () => {
     const experimentName = UUID();
-    const variantNames = [];
+    const variantNames: string[] = [];
     for (let i = 0; i < 100; i++) {
       variantNames.push(UUID());
     }
 
-    const wrapper = mount(
+    const wrapper = renderWithWrapper(
       <Experiment name={experimentName}>
         {variantNames.map((name) => {
           return (
@@ -31,12 +31,16 @@ describe('Experiment', function () {
       </Experiment>
     );
 
-    expect(wrapper.find(Variant).length).toBe(1);
+    // Check that only one variant is rendered by verifying there's only one matched DOM element
+    const renderedVariants = variantNames.filter((name) =>
+      wrapper.find(`#variant-${name}`).exists()
+    );
+    expect(renderedVariants.length).toBe(1);
   });
 
   it('should render the correct variant', () => {
     const experimentName = UUID();
-    const variantNames = [];
+    const variantNames: string[] = [];
     for (let i = 0; i < 100; i++) {
       variantNames.push(UUID());
     }
@@ -67,17 +71,17 @@ describe('Experiment', function () {
       </Experiment>
     );
 
-    let wrapper = mount(<AppWithDefaultVariantName />);
+    let wrapper = renderWithWrapper(<AppWithDefaultVariantName />);
     expect(wrapper.find(`#variant-${defaultVariantName}`).exists()).toBe(true);
 
-    wrapper = mount(<AppWithoutDefaultVariantName />);
+    wrapper = renderWithWrapper(<AppWithoutDefaultVariantName />);
     expect(wrapper.find(`#variant-${defaultVariantName}`).exists()).toBe(true);
   });
 
   it('should error if variants are added to a experiment after a variant was selected', () => {
     const experimentName = UUID();
-    mount(
-      <Experiment name={experimentName} value="A">
+    renderWithWrapper(
+      <Experiment name={experimentName} defaultVariantName="A">
         <Variant name="A">
           <div id="variant-a" />
         </Variant>
@@ -90,8 +94,8 @@ describe('Experiment', function () {
     // Suppress React's error boundary logs
     jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() =>
-      mount(
-        <Experiment name={experimentName} value="A">
+      renderWithWrapper(
+        <Experiment name={experimentName} defaultVariantName="A">
           <Variant name="C">
             <div id="variant-c" />
           </Variant>
@@ -100,7 +104,7 @@ describe('Experiment', function () {
           </Variant>
         </Experiment>
       )
-    ).toThrowError('', 'PUSHTELL_INVALID_VARIANT');
+    ).toThrow(expect.objectContaining({ type: 'PUSHTELL_INVALID_VARIANT' }));
   });
 
   it('should not error if variants are added to a experiment after a variant was selected if variants were defined', () => {
@@ -108,9 +112,8 @@ describe('Experiment', function () {
     emitter.defineVariants(experimentName, ['A', 'B', 'C', 'D']);
     const spy = jest.spyOn(console, 'error');
 
-    let experimentRef = React.createRef();
-    mount(
-      <Experiment ref={experimentRef} name={experimentName}>
+    renderWithWrapper(
+      <Experiment name={experimentName}>
         <Variant name="A">
           <a id="variant-a" href="#A">
             A
@@ -125,8 +128,8 @@ describe('Experiment', function () {
     );
     expect(spy).not.toHaveBeenCalled();
 
-    mount(
-      <Experiment ref={experimentRef} name={experimentName}>
+    renderWithWrapper(
+      <Experiment name={experimentName}>
         <Variant name="C">
           <a id="variant-c" href="#C">
             C
@@ -146,7 +149,7 @@ describe('Experiment', function () {
     const experimentName = UUID();
     emitter.defineVariants(experimentName, ['A', 'B', 'C']);
 
-    mount(
+    renderWithWrapper(
       <Experiment name={experimentName}>
         <Variant name="A">
           <a id="variant-a" href="#A">
@@ -164,7 +167,7 @@ describe('Experiment', function () {
     // Suppress React's error boundary logs
     jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() =>
-      mount(
+      renderWithWrapper(
         <Experiment name={experimentName}>
           <Variant name="C">
             <a id="variant-c" href="#C">
@@ -178,7 +181,7 @@ describe('Experiment', function () {
           </Variant>
         </Experiment>
       )
-    ).toThrowError('', 'PUSHTELL_INVALID_VARIANT');
+    ).toThrow(expect.objectContaining({ type: 'PUSHTELL_INVALID_VARIANT' }));
   });
 
   it('should not error if an older test variant is set', () => {
@@ -186,7 +189,7 @@ describe('Experiment', function () {
     localStorage.setItem('PUSHTELL-' + experimentName, 'C');
     const spy = jest.spyOn(console, 'error');
 
-    mount(
+    renderWithWrapper(
       <Experiment name={experimentName}>
         <Variant name="A">
           <a id="variant-a" href="#A">
@@ -207,7 +210,7 @@ describe('Experiment', function () {
   it('should choose the same variant when a user identifier is defined', () => {
     const userIdentifier = UUID();
     const experimentName = UUID();
-    const variantNames = [];
+    const variantNames: string[] = [];
     for (let i = 0; i < 100; i++) {
       variantNames.push(UUID());
     }
@@ -230,13 +233,13 @@ describe('Experiment', function () {
       chosenVariant = variantName;
     });
 
-    mount(<App />);
+    renderWithWrapper(<App />);
     expect(chosenVariant).toBeDefined();
 
     for (let i = 0; i < 100; i++) {
       emitter._reset();
       localStorage.clear();
-      const wrapper = mount(<App />);
+      const wrapper = renderWithWrapper(<App />);
       expect(wrapper.find(`#variant-${chosenVariant}`).exists()).toBe(true);
     }
   });
@@ -254,14 +257,27 @@ describe('Experiment', function () {
             <Variant name="B">B</Variant>
           </Experiment>
 
-          <button onClick={() => setCounter(counter + 1)}>
+          <button
+            data-testid="counter-button"
+            onClick={() => setCounter(counter + 1)}
+          >
             Re-render ({counter})
           </button>
         </>
       );
     };
-    const wrapper = mount(<App />);
-    wrapper.find('button').simulate('click');
+    renderWithWrapper(<App />);
+
+    // Get button by test ID and click it in act()
+    const button = document.querySelector(
+      '[data-testid="counter-button"]'
+    ) as HTMLElement;
+    act(() => {
+      if (button) {
+        button.click();
+      }
+    });
+
     expect(spy).not.toHaveBeenCalled();
   });
 });

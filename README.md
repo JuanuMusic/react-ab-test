@@ -1,9 +1,7 @@
 # A/B Testing React Components
 
-[![NPM version](https://badge.fury.io/js/%40marvelapp%2Freact-ab-test.svg)](https://badge.fury.io/js/%40marvelapp%2Freact-ab-test)
-[![Circle CI](https://circleci.com/gh/marvelapp/react-ab-test.svg?style=shield)](https://circleci.com/gh/marvelapp/react-ab-test)
-[![Dependency Status](https://david-dm.org/marvelapp/react-ab-test.svg)](https://david-dm.org/marvelapp/react-ab-test)
-[![NPM Downloads](https://img.shields.io/npm/dm/@marvelapp/react-ab-test.svg?style=flat)](https://www.npmjs.com/package/@marvelapp/react-ab-test)
+[![NPM version](https://badge.fury.io/js/%40juanu%2Freact-ab-test.svg)](https://badge.fury.io/js/%40juanu%2Freact-ab-test)
+[![NPM Downloads](https://img.shields.io/npm/dm/@juanu/react-ab-test.svg?style=flat)](https://www.npmjs.com/package/@juanu/react-ab-test)
 
 Wrap components in [`<Variant />`](#variant-) and nest in [`<Experiment />`](#experiment-). A variant is chosen randomly and saved to local storage.
 
@@ -29,7 +27,7 @@ emitter.addPlayListener((experimentName, variantName) => {
 });
 ```
 
-Please [★ on GitHub](https://github.com/marvelapp/react-ab-test)!
+Please [★ on GitHub](https://github.com/juanumusic/react-ab-test)!
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
@@ -86,7 +84,7 @@ Please [★ on GitHub](https://github.com/marvelapp/react-ab-test)!
 `react-ab-test` is compatible with React `>=0.14.x`
 
 ```bash
-yarn add @marvelapp/react-ab-test
+yarn add @juanu/react-ab-test
 ```
 
 ## Usage
@@ -100,7 +98,7 @@ Using useExperiment Hook
 
 ```js
 import React from 'react';
-import { useExperiment, emitter } from '@marvelapp/react-ab-test';
+import { useExperiment, emitter } from '@juanu/react-ab-test';
 
 // Hook usage pattern requires registration of experiments
 emitter.defineVariants("My Example", ["A", "B"]);
@@ -126,7 +124,7 @@ Using Experiment Component
 
 ```js
 import React from 'react';
-import { Experiment, Variant, emitter } from '@marvelapp/react-ab-test';
+import { Experiment, Variant, emitter } from '@juanu/react-ab-test';
 
 class App extends Component {
   experimentRef = React.createRef();
@@ -171,7 +169,7 @@ Try it [on JSFiddle](http://jsfiddle.net/pushtell/pcutps9q/)
 
 ```js
 import React from 'react';
-import { Experiment, Variant, emitter } from '@marvelapp/react-ab-test';
+import { Experiment, Variant, emitter } from '@juanu/react-ab-test';
 
 // Define variants in advance.
 emitter.defineVariants('My Example', ['A', 'B', 'C']);
@@ -245,7 +243,7 @@ Use [emitter.defineVariants()](#emitterdefinevariantsexperimentname-variantnames
 
 ```js
 import React from 'react';
-import { Experiment, Variant, emitter } from '@marvelapp/react-ab-test';
+import { Experiment, Variant, emitter } from '@juanu/react-ab-test';
 
 // Define variants and weights in advance.
 emitter.defineVariants('My Example', ['A', 'B', 'C'], [10, 40, 40]);
@@ -275,7 +273,7 @@ To do so, use [emitter.calculateActiveVariant()](#emittercalculateactivevariante
 be called after [emitter.defineVariants()](#emitterdefinevariantsexperimentname-variantnames--variantweights)
 
 ```js
-import { emitter } from '@marvelapp/react-ab-test';
+import { emitter } from '@juanu/react-ab-test';
 
 // Define variants in advance
 emitter.defineVariants('My Example', ['A', 'B', 'C']);
@@ -298,7 +296,7 @@ Try it [on JSFiddle](http://jsfiddle.net/pushtell/vs9kkxLd/)
 
 ```js
 import React from 'react';
-import { Experiment, Variant, experimentDebugger } from '@marvelapp/react-ab-test';
+import { Experiment, Variant, experimentDebugger } from '@juanu/react-ab-test';
 
 experimentDebugger.enable();
 
@@ -367,7 +365,7 @@ var session = require('express-session');
 var React = require('react');
 var ReactDOMServer = require('react-dom/server');
 var Component = require('./Component.jsx');
-var abEmitter = require('@marvelapp/react-ab-test/lib/emitter');
+var abEmitter = require('@juanu/react-ab-test/lib/emitter');
 
 var app = express();
 
@@ -709,7 +707,7 @@ Try it [on JSFiddle](https://jsfiddle.net/pushtell/hwtnzm35/)
 
 ```js
 import React from 'react';
-import { Experiment, Variant, mixpanelHelper } from '@marvelapp/react-ab-test';
+import { Experiment, Variant, mixpanelHelper } from '@juanu/react-ab-test';
 
 // window.mixpanel has been set by Mixpanel's embed snippet.
 mixpanelHelper.enable();
@@ -771,7 +769,7 @@ Try it [on JSFiddle](https://jsfiddle.net/pushtell/ae1jeo2k/)
 
 ```js
 import React from 'react';
-import { Experiment, Variant, segmentHelper } from '@marvelapp/react-ab-test';
+import { Experiment, Variant, segmentHelper } from '@juanu/react-ab-test';
 
 // window.analytics has been set by Segment's embed snippet.
 segmentHelper.enable();

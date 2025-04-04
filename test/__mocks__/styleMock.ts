@@ -1,0 +1,2 @@
+// Style mock
+export default {};

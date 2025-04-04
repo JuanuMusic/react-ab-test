@@ -1,5 +1,5 @@
 {
-  "parser": "babel-eslint",
+  "parser": "@typescript-eslint/parser",
   "env": {
     "browser": true,
     "mocha": true,
@@ -9,8 +9,11 @@
   "globals": {
     "assert": true
   },
-  "plugins": ["babel", "react", "promise", "jest"],
-  "extends": ["plugin:jest/recommended"],
+  "plugins": ["@typescript-eslint", "react", "promise", "jest"],
+  "extends": [
+    "plugin:jest/recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
   "rules": {
     "camelcase": 0,
     "no-sequences": 0,

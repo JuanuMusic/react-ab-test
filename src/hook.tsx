@@ -1,15 +1,22 @@
 import { useEffect, useState } from 'react';
 import emitter from './emitter';
+import { ExperimentHookResult } from './types';
 
-const selectVariant = (currentVariant) => (variants, fallback) => {
-  if (currentVariant in variants) {
-    return variants[currentVariant];
-  }
-  return fallback;
-};
+const selectVariant =
+  <T,>(currentVariant: string) =>
+  (variants: Record<string, T>, fallback: T): T => {
+    if (currentVariant in variants) {
+      return variants[currentVariant];
+    }
+    return fallback;
+  };
 
-const useExperiment = (experimentName, userIdentifier, defaultVariantName) => {
-  const [activeVariant, setActiveVariant] = useState(
+const useExperiment = (
+  experimentName: string,
+  userIdentifier?: string,
+  defaultVariantName?: string
+): ExperimentHookResult => {
+  const [activeVariant, setActiveVariant] = useState<string>(
     emitter.calculateActiveVariant(
       experimentName,
       userIdentifier,
@@ -24,7 +31,7 @@ const useExperiment = (experimentName, userIdentifier, defaultVariantName) => {
 
     const variantListener = emitter.addActiveVariantListener(
       experimentName,
-      (name, variant) => {
+      (name: string, variant: string) => {
         if (name === experimentName && variant !== activeVariant) {
           setActiveVariant(variant);
         }

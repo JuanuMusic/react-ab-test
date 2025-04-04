@@ -7,7 +7,7 @@ import Experiment from './lib/Experiment';
 import Variant from './lib/Variant';
 import experimentDebugger from './lib/debugger';
 // Normally the library would be imported with:
-// import { Experiment, Variant, experimentDebugger } from '@marvelapp/react-ab-test
+// import { Experiment, Variant, experimentDebugger } from '@juanu/react-ab-test
 
 experimentDebugger.enable();
 

@@ -1,16 +1,26 @@
 import React, { useMemo } from 'react';
-import PropTypes from 'prop-types';
 import useExperiment from './hook';
 import emitter from './emitter';
+import { ExperimentProps, VariantMap } from './types';
 
-const filterVariants = (name, children) => {
-  let variants = {};
+interface ErrorWithType extends Error {
+  type?: string;
+}
+
+const filterVariants = (
+  name: string,
+  children: React.ReactNode
+): VariantMap => {
+  const variants: VariantMap = {};
+
   React.Children.forEach(children, (element) => {
     if (
       !React.isValidElement(element) ||
-      element.type.displayName !== 'Pushtell.Variant'
+      !element.type ||
+      typeof element.type === 'string' ||
+      (element.type as React.ComponentType).displayName !== 'Pushtell.Variant'
     ) {
-      let error = new Error(
+      const error: ErrorWithType = new Error(
         'Pushtell Experiment children must be Pushtell Variant components.'
       );
       error.type = 'PUSHTELL_INVALID_CHILD';
@@ -19,11 +29,12 @@ const filterVariants = (name, children) => {
     variants[element.props.name] = element;
     emitter.addExperimentVariant(name, element.props.name);
   });
+
   emitter.emit('variants-loaded', name);
   return variants;
 };
 
-const CoreExperiment = (props) => {
+const CoreExperiment = (props: ExperimentProps): React.ReactElement => {
   const variants = useMemo(() => {
     return filterVariants(props.name, props.children);
   }, [props.name, props.children]);
@@ -34,14 +45,10 @@ const CoreExperiment = (props) => {
     props.defaultVariantName
   );
 
-  return selectVariant(variants, []);
-};
-
-CoreExperiment.propTypes = {
-  name: PropTypes.string.isRequired,
-  userIdentifier: PropTypes.string,
-  defaultVariantName: PropTypes.string,
-  children: PropTypes.node,
+  return selectVariant(
+    variants,
+    React.createElement(React.Fragment)
+  ) as React.ReactElement;
 };
 
 export default CoreExperiment;

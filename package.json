@@ -1,5 +1,5 @@
 {
-  "name": "@marvelapp/react-ab-test",
+  "name": "@juanu/react-ab-test",
   "keywords": [
     "react",
     "react-component",
@@ -10,83 +10,84 @@
     "A/B testing",
     "A/B test"
   ],
-  "main": "index.js",
-  "version": "3.1.0",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib"
+  ],
+  "exports": {
+    ".": {
+      "import": "./lib/index.js",
+      "require": "./lib/index.js",
+      "types": "./lib/index.d.ts"
+    }
+  },
+  "version": "4.0.2",
   "description": "A/B testing React components and debug tools. Isomorphic with a simple, universal interface. Well documented and lightweight. Tested in popular browsers and Node.js. Includes helpers for Mixpanel and Segment.com.",
   "directories": {
     "test": "test"
   },
   "peerDependencies": {
-    "react": ">=16.8.0 <18.0.0"
+    "react": ">=16.8.0 <20.0.0"
   },
   "dependencies": {
-    "fbemitter": "^3.0.0",
-    "fbjs": "^3.0.0",
     "prop-types": "^15.7.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.3",
-    "@babel/core": "^7.14.3",
-    "@babel/plugin-proposal-class-properties": "^7.13.0",
-    "@babel/preset-env": "^7.14.4",
-    "@babel/preset-react": "^7.13.13",
-    "@wojtekmaj/enzyme-adapter-react-17": "^0.6.1",
-    "babel-eslint": "^10.1.0",
+    "@swc/core": "^1.3.100",
+    "@swc/jest": "^0.2.29",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.3.20",
+    "@types/react-dom": "^18.3.6",
+    "@typescript-eslint/eslint-plugin": "^7.3.1",
+    "@typescript-eslint/parser": "^7.3.1",
     "doctoc": "^2.0.0",
-    "enzyme": "^3.11.0",
-    "enzyme-to-json": "^3.6.2",
-    "eslint": "^7.27.0",
-    "eslint-plugin-babel": "^5.3.1",
-    "eslint-plugin-jest": "^24.3.6",
-    "eslint-plugin-promise": "^5.1.0",
-    "eslint-plugin-react": "^7.23.2",
-    "fbemitter": "^3.0.0",
-    "fbjs": "^3.0.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-jest": "^27.6.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.33.2",
     "husky": ">=6",
-    "jest": "^27.0.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "lint-staged": ">=10",
     "node-localstorage": "^2.1.6",
     "prettier": "^2.3.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.4.5",
     "uuid": "^8.3.2"
   },
   "scripts": {
-    "test": "jest",
-    "build": "doctoc README.md --github --title '<h1>Table of Contents</h1>'; babel src --out-dir lib;",
-    "format": "prettier --write '**/*.{js,jsx}'",
+    "test": "node --no-warnings node_modules/.bin/jest --no-watchman --no-watch",
+    "test:watch": "node --no-warnings node_modules/.bin/jest --watch",
+    "build": "doctoc README.md --github --title '<h1>Table of Contents</h1>'; tsc",
+    "dev:setup": "npm install --save-dev @swc/core @swc/jest @testing-library/dom @testing-library/react node-localstorage",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx}'",
     "format:check": "yarn format --check",
     "lint": "eslint --ignore-path .gitignore .",
     "lint:fix": "eslint --ignore-path .gitignore --fix .",
-    "prepare": "husky install"
-  },
-  "jest": {
-    "resetMocks": true,
-    "restoreMocks": true,
-    "setupFilesAfterEnv": [
-      "<rootDir>test/setup.js"
-    ],
-    "snapshotSerializers": [
-      "enzyme-to-json/serializer"
-    ],
-    "testEnvironment": "jsdom",
-    "testURL": "http://example.com"
+    "prepare": "husky install",
+    "typecheck": "tsc --noEmit"
   },
   "prettier": {
     "singleQuote": true
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/marvelapp/react-ab-test.git"
+    "url": "git+https://github.com/juanumusic/react-ab-test.git"
   },
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/marvelapp/react-ab-test/issues"
+    "url": "https://github.com/juanumusic/react-ab-test/issues"
   },
-  "homepage": "https://github.com/marvelapp/react-ab-test#readme",
+  "homepage": "https://github.com/juanumusic/react-ab-test#readme",
   "lint-staged": {
-    "*.js": "eslint --cache --fix",
-    "*.{js,jsx}": "prettier --write"
+    "*.{js,ts,tsx}": "eslint --cache --fix",
+    "*.{js,jsx,ts,tsx}": "prettier --write"
   }
 }

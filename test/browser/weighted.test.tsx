@@ -1,10 +1,10 @@
 import React from 'react';
 import { v4 as UUID } from 'uuid';
-import { mount } from 'enzyme';
+import { renderWithWrapper } from '../test-utils';
 
-import Experiment from '../../src/Experiment.jsx';
-import Variant from '../../src/Variant.jsx';
-import emitter from '../../src/emitter.jsx';
+import Experiment from '../../src/Experiment';
+import Variant from '../../src/Variant';
+import emitter from '../../src/emitter';
 
 function add(a, b) {
   return a + b;
@@ -13,9 +13,9 @@ function add(a, b) {
 describe('Weighted Experiment', () => {
   it('should choose a weighted variants', () => {
     const experimentName = UUID();
-    const variantNames = [];
-    const variantWeights = [];
-    const playCount = {};
+    const variantNames: string[] = [];
+    const variantWeights: number[] = [];
+    const playCount: Record<string, number> = {};
 
     for (let i = 0; i < 5; i++) {
       variantNames.push(UUID());
@@ -53,8 +53,8 @@ describe('Weighted Experiment', () => {
       playCount[variantName] += 1;
     });
 
-    for (let i = 0; i < 1000; i++) {
-      const container = mount(<App />);
+    for (let i = 0; i < 10000; i++) {
+      const container = renderWithWrapper(<App />);
       container.unmount();
       localStorage.clear();
       emitter._resetPlayedExperiments();

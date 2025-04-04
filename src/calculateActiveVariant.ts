@@ -1,10 +1,22 @@
-import crc32 from 'fbjs/lib/crc32';
+// import crc32 from 'fbjs/lib/crc32'; // Remove this import
 import emitter from './emitter';
 import store from './store';
 
-const calculateVariant = (experimentName, userIdentifier) => {
-  /*
+// Simple hash function (djb2 variation)
+function simpleHash(str: string): number {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) + hash + char; /* hash * 33 + char */
+  }
+  return hash;
+}
 
+const calculateVariant = (
+  experimentName: string,
+  userIdentifier?: string
+): string => {
+  /*
     Choosing a weighted variant:
       For C, A, B with weights 2, 4, 8
 
@@ -16,8 +28,7 @@ const calculateVariant = (experimentName, userIdentifier) => {
       AAAABBBBBBBBCC
       ========^
       Select B
-
-    */
+  */
 
   // Sorted array of the variant names, example: ["A", "B", "C"]
   const variants = emitter.getSortedVariants(experimentName);
@@ -26,13 +37,13 @@ const calculateVariant = (experimentName, userIdentifier) => {
   // return [4, 8, 2] to correspond with ["A", "B", "C"]
   const weights = emitter.getSortedVariantWeights(experimentName);
   // Sum the weights
-  const weightSum = weights.reduce((a, b) => {
+  const weightSum = weights.reduce((a: number, b: number): number => {
     return a + b;
   }, 0);
   // A random number between 0 and weightSum
   let weightedIndex =
     typeof userIdentifier === 'string'
-      ? Math.abs(crc32(userIdentifier) % weightSum)
+      ? Math.abs(simpleHash(userIdentifier) % weightSum) // Use simpleHash
       : Math.floor(Math.random() * weightSum);
   // Iterate through the sorted weights, and deduct each from the weightedIndex.
   // If weightedIndex drops < 0, select the variant. If weightedIndex does not
@@ -49,7 +60,11 @@ const calculateVariant = (experimentName, userIdentifier) => {
   return selectedVariant;
 };
 
-export default (experimentName, userIdentifier, defaultVariantName) => {
+export default (
+  experimentName: string,
+  userIdentifier?: string,
+  defaultVariantName?: string
+): string => {
   if (typeof userIdentifier === 'string') {
     return calculateVariant(experimentName, userIdentifier);
   }

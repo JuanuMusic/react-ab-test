@@ -1,27 +1,30 @@
 import React from 'react';
-import { mount } from 'enzyme';
+import { renderWithWrapper } from '../test-utils';
 
-import CoreExperiment from '../../src/CoreExperiment.jsx';
-import Variant from '../../src/Variant.jsx';
-import emitter from '../../src/emitter.jsx';
+import CoreExperiment from '../../src/CoreExperiment';
+import Variant from '../../src/Variant';
 
 describe('Variant', () => {
   it('should render text nodes', () => {
     const variantTextA = 'variantTextA';
     const variantTextB = 'variantTextB';
 
-    const wrapper = mount(
+    renderWithWrapper(
       <CoreExperiment name="text-nodes" defaultVariantName="A">
         <Variant name="A">{variantTextA}</Variant>
         <Variant name="B">{variantTextB}</Variant>
       </CoreExperiment>
     );
 
-    expect(wrapper.find(Variant).at(0).text()).toBe(variantTextA);
+    // Since CoreExperiment only renders the active variant (A),
+    // we should find its content in the document
+    const content = document.body.textContent;
+    expect(content).toContain(variantTextA);
+    expect(content).not.toContain(variantTextB);
   });
 
   it('should render components', () => {
-    const wrapper = mount(
+    const wrapper = renderWithWrapper(
       <CoreExperiment name="components" defaultVariantName="A">
         <Variant name="A">
           <div id="variant-a" />
@@ -36,7 +39,7 @@ describe('Variant', () => {
   });
 
   it('should render arrays of components', () => {
-    const wrapper = mount(
+    const wrapper = renderWithWrapper(
       <CoreExperiment name="array-of-elements" defaultVariantName="A">
         <Variant name="A">
           <div id="variant-a" />

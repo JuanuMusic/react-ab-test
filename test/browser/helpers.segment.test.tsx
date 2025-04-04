@@ -1,25 +1,34 @@
 import React from 'react';
 import { v4 as UUID } from 'uuid';
-import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
-import { mount } from 'enzyme';
+import { renderWithWrapper } from '../test-utils';
 
-import CoreExperiment from '../../src/CoreExperiment.jsx';
-import Variant from '../../src/Variant.jsx';
-import emitter from '../../src/emitter.jsx';
-import segmentHelper from '../../src/helpers/segment.jsx';
+import CoreExperiment from '../../src/CoreExperiment';
+import Variant from '../../src/Variant';
+import emitter from '../../src/emitter';
+import segmentHelper from '../../src/helpers/segment';
+
+// Define a proper interface for Segment analytics
+interface SegmentAnalytics {
+  track: (event: string, properties?: Record<string, unknown>) => void;
+}
+
+// Extend Window interface to include analytics
+declare global {
+  interface Window {
+    analytics?: SegmentAnalytics;
+  }
+}
 
 describe('Segment Helper', () => {
   it('should error if Segment global is not set', () => {
-    expect(() => segmentHelper.enable()).toThrowError(
-      '',
-      'PUSHTELL_HELPER_MISSING_GLOBAL'
+    expect(() => segmentHelper.enable()).toThrow(
+      /React A\/B Test Segment Helper: 'analytics' global is not defined/
     );
   });
 
   it('should error if Segment is disabled before it is enabled', () => {
-    expect(() => mixpanelHelper.disable()).toThrowError(
-      '',
-      'PUSHTELL_HELPER_INVALID_DISABLE'
+    expect(() => segmentHelper.disable()).toThrow(
+      /React A\/B Test Segment Helper: Helper was disabled without being enabled first/
     );
   });
 
@@ -30,11 +39,11 @@ describe('Segment Helper', () => {
     window.analytics = {
       track() {},
     };
-    const spy = jest.spyOn(analytics, 'track');
+    const spy = jest.spyOn(window.analytics, 'track');
 
     segmentHelper.enable();
 
-    mount(
+    renderWithWrapper(
       <CoreExperiment name={experimentName} defaultVariantName={variantName}>
         <Variant name="A">
           <div id="variant-a" />

@@ -1,14 +1,15 @@
 import React from 'react';
 import { v4 as UUID } from 'uuid';
-import { mount } from 'enzyme';
+import { renderWithWrapper } from '../test-utils';
+import { act } from '@testing-library/react';
 
-import CoreExperiment from '../../src/CoreExperiment.jsx';
-import Variant from '../../src/Variant.jsx';
-import experimentDebugger from '../../src/debugger.jsx';
+import CoreExperiment from '../../src/CoreExperiment';
+import Variant from '../../src/Variant';
+import * as experimentDebugger from '../../src/debugger';
 
 describe('Debugger', () => {
   it('should enable and disable.', () => {
-    const wrapper = mount(
+    renderWithWrapper(
       <CoreExperiment name={UUID()} defaultVariantName="A">
         <Variant name="A">
           <div id="variant-a" />
@@ -19,22 +20,31 @@ describe('Debugger', () => {
 
     expect(getDebugger()).toBeNull();
 
-    experimentDebugger.enable();
+    act(() => {
+      experimentDebugger.enable();
+    });
     expect(getDebugger()).toBeDefined();
 
-    experimentDebugger.disable();
+    act(() => {
+      experimentDebugger.disable();
+    });
     expect(getDebugger()).toBeNull();
   });
 
   it('should add and remove style rules', () => {
-    experimentDebugger.enable();
+    act(() => {
+      experimentDebugger.enable();
+    });
     expect(hasCSSSelector('#pushtell-debugger')).toBe(true);
-    experimentDebugger.disable();
+
+    act(() => {
+      experimentDebugger.disable();
+    });
     expect(hasCSSSelector('#pushtell-debugger')).toBe(false);
   });
 
   it("should change an experiment's value.", () => {
-    const wrapper = mount(
+    const wrapper = renderWithWrapper(
       <CoreExperiment name={UUID()} defaultVariantName="A">
         <Variant name="A">
           <div id="variant-a" />
@@ -45,32 +55,47 @@ describe('Debugger', () => {
       </CoreExperiment>
     );
 
-    experimentDebugger.enable();
+    act(() => {
+      experimentDebugger.enable();
+    });
 
     expect(wrapper.find('#variant-a').exists());
     expect(!wrapper.find('#variant-b').exists());
 
-    document.querySelector('#pushtell-debugger div.pushtell-handle').click();
+    act(() => {
+      (
+        document.querySelector(
+          '#pushtell-debugger div.pushtell-handle'
+        ) as HTMLElement
+      )?.click();
+    });
 
     const radioButtonA = document.querySelector(
       "#pushtell-debugger input[value='A']"
-    );
+    ) as HTMLInputElement;
     const radioButtonB = document.querySelector(
       "#pushtell-debugger input[value='B']"
-    );
-    expect(radioButtonA.checked).toBe(true);
-    radioButtonB.click();
+    ) as HTMLInputElement;
+    expect(radioButtonA?.checked).toBe(true);
+
+    act(() => {
+      radioButtonB?.click();
+    });
 
     expect(!wrapper.find('#variant-a').exists());
     expect(wrapper.find('#variant-b').exists());
 
-    experimentDebugger.disable();
+    act(() => {
+      experimentDebugger.disable();
+    });
   });
 
   describe('when is not available', () => {
     beforeEach(() => {
       experimentDebugger.setDebuggerAvailable(false);
-      experimentDebugger.enable();
+      act(() => {
+        experimentDebugger.enable();
+      });
     });
     it('should do nothing when enabling it', () => {
       expect(hasCSSSelector('#pushtell-debugger')).toBe(false);
@@ -87,16 +112,13 @@ function hasCSSSelector(s) {
     return '';
   }
   s = s.toLowerCase();
-  var A,
-    temp,
-    n = document.styleSheets.length,
-    SA = [];
+
   for (let i = 0; i < document.styleSheets.length; i++) {
-    let sheet = document.styleSheets[i];
-    let rules = sheet.rules ? sheet.rules : sheet.cssRules;
+    const sheet = document.styleSheets[i];
+    const rules = sheet.rules ? sheet.rules : sheet.cssRules;
     for (let j = 0; j < rules.length; j++) {
-      let selector = rules[j].selectorText
-        ? rules[j].selectorText
+      const selector = (rules[j] as CSSStyleRule).selectorText
+        ? (rules[j] as CSSStyleRule).selectorText
         : rules[j].toString();
       if (selector.toLowerCase() === s) {
         return true;

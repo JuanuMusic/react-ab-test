@@ -1,6 +1,6 @@
 import React from 'react';
 import { v4 as UUID } from 'uuid';
-import { mount } from 'enzyme';
+import { renderWithWrapper } from '../test-utils';
 
 import useExperiment from '../../src/hook';
 import emitter from '../../src/emitter';
@@ -15,10 +15,13 @@ describe('useExperiment', function () {
     expect(experimentName).toEqual(name);
     expect(activeVariant).toEqual('A');
 
-    const variant = selectVariant({
-      A: <div id="variant-a" />,
-      B: <div id="variant-b" />,
-    });
+    const variant = selectVariant(
+      {
+        A: <div id="variant-a" />,
+        B: <div id="variant-b" />,
+      },
+      <div>Default variant</div>
+    );
 
     return (
       <div>
@@ -40,7 +43,7 @@ describe('useExperiment', function () {
   });
 
   it('should render the correct variant.', () => {
-    const wrapper = mount(<App />);
+    const wrapper = renderWithWrapper(<App />);
     expect(!wrapper.find('#variant-a').exists());
     expect(wrapper.find('#variant-b').exists());
   });
@@ -49,7 +52,7 @@ describe('useExperiment', function () {
     const listener = jest.fn();
     emitter.addPlayListener(listener);
 
-    mount(<App />);
+    renderWithWrapper(<App />);
     expect(listener).toHaveBeenCalledWith(name, 'A');
   });
 
@@ -57,8 +60,8 @@ describe('useExperiment', function () {
     const listener = jest.fn();
     emitter.addWinListener(listener);
 
-    const wrapper = mount(<App />);
-    wrapper.find('#cta').simulate('click');
+    const wrapper = renderWithWrapper(<App />);
+    wrapper.find('#cta').click();
     expect(listener).toHaveBeenCalledWith(name, 'A');
   });
 });

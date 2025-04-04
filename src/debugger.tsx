@@ -1,22 +1,37 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot, Root } from 'react-dom/client';
 import emitter from './emitter';
-import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
+
+// Replace fbjs/lib/ExecutionEnvironment with our own DOM check
+const canUseDOM: boolean = !!(
+  typeof window !== 'undefined' &&
+  window.document &&
+  window.document.createElement
+);
 
 let isDebuggerAvailable = process.env.NODE_ENV !== 'production';
+let debuggerRoot: Root | null = null;
+let style: HTMLStyleElement | null = null;
 
-let style = null;
-function attachStyleSheet() {
+function attachStyleSheet(): void {
   style = document.createElement('style');
   style.appendChild(document.createTextNode(''));
   document.head.appendChild(style);
-  function addCSSRule(selector, rules) {
-    if ('insertRule' in style.sheet) {
-      style.sheet.insertRule(selector + '{' + rules + '}', 0);
-    } else if ('addRule' in style.sheet) {
-      style.sheet.addRule(selector, rules, 0);
+
+  function addCSSRule(selector: string, rules: string): void {
+    if (style && style.sheet && 'insertRule' in style.sheet) {
+      (style.sheet as CSSStyleSheet).insertRule(
+        selector + '{' + rules + '}',
+        0
+      );
+    } else if (style && style.sheet && 'addRule' in style.sheet) {
+      const sheet = style.sheet as CSSStyleSheet;
+      if ('addRule' in sheet) {
+        sheet.addRule(selector, rules, 0);
+      }
     }
   }
+
   addCSSRule('#pushtell-debugger', 'z-index: 25000');
   addCSSRule('#pushtell-debugger', 'position: fixed');
   addCSSRule('#pushtell-debugger', 'transform: translateX(-50%)');
@@ -119,36 +134,49 @@ function attachStyleSheet() {
     'transition: all .25s'
   );
 }
-function removeStyleSheet() {
+
+function removeStyleSheet(): void {
   if (style !== null) {
     document.head.removeChild(style);
     style = null;
   }
 }
 
-class Debugger extends Component {
-  state = {
+interface DebuggerState {
+  experiments: Record<string, Record<string, boolean>>;
+  visible: boolean;
+}
+
+interface EmitterSubscription {
+  remove: () => void;
+}
+
+class Debugger extends Component<Record<string, never>, DebuggerState> {
+  activeSubscription: EmitterSubscription | null = null;
+  inactiveSubscription: EmitterSubscription | null = null;
+
+  state: DebuggerState = {
     experiments: emitter.getActiveExperiments(),
     visible: false,
   };
 
-  toggleVisibility = () => {
+  toggleVisibility = (): void => {
     this.setState({
       visible: !this.state.visible,
     });
   };
 
-  updateExperiments = () => {
+  updateExperiments = (): void => {
     this.setState({
       experiments: emitter.getActiveExperiments(),
     });
   };
 
-  setActiveVariant(experimentName, variantName) {
+  setActiveVariant(experimentName: string, variantName: string): void {
     emitter.setActiveVariant(experimentName, variantName);
   }
 
-  componentDidMount() {
+  componentDidMount(): void {
     this.activeSubscription = emitter.addListener(
       'active',
       this.updateExperiments
@@ -159,13 +187,17 @@ class Debugger extends Component {
     );
   }
 
-  componentWillUnmount() {
-    this.activeSubscription.remove();
-    this.inactiveSubscription.remove();
+  componentWillUnmount(): void {
+    if (this.activeSubscription) {
+      this.activeSubscription.remove();
+    }
+    if (this.inactiveSubscription) {
+      this.inactiveSubscription.remove();
+    }
   }
 
   render() {
-    var experimentNames = Object.keys(this.state.experiments);
+    const experimentNames = Object.keys(this.state.experiments);
     if (this.state.visible) {
       return (
         <div className="pushtell-container pushtell-panel">
@@ -173,11 +205,11 @@ class Debugger extends Component {
             ×
           </div>
           {experimentNames.map((experimentName) => {
-            var variantNames = Object.keys(
+            const variantNames = Object.keys(
               this.state.experiments[experimentName]
             );
             if (variantNames.length === 0) {
-              return;
+              return null;
             }
             return (
               <div className="pushtell-experiment" key={experimentName}>
@@ -190,7 +222,7 @@ class Debugger extends Component {
                           className={
                             this.state.experiments[experimentName][variantName]
                               ? 'active'
-                              : null
+                              : undefined
                           }
                           onClick={this.setActiveVariant.bind(
                             this,
@@ -238,33 +270,34 @@ class Debugger extends Component {
   }
 }
 
-module.exports = {
-  setDebuggerAvailable(value) {
-    isDebuggerAvailable = value;
-  },
-  enable() {
-    if (!isDebuggerAvailable || !canUseDOM) {
-      return;
-    }
+export const setDebuggerAvailable = (value: boolean): void => {
+  isDebuggerAvailable = value;
+};
 
-    attachStyleSheet();
-    let body = document.getElementsByTagName('body')[0];
-    let container = document.createElement('div');
-    container.id = 'pushtell-debugger';
-    body.appendChild(container);
-    ReactDOM.render(<Debugger />, container);
-  },
-  disable() {
-    if (!isDebuggerAvailable || !canUseDOM) {
-      return;
-    }
+export const enable = (): void => {
+  if (!isDebuggerAvailable || !canUseDOM) {
+    return;
+  }
 
-    removeStyleSheet();
-    let body = document.getElementsByTagName('body')[0];
-    let container = document.getElementById('pushtell-debugger');
-    if (container) {
-      ReactDOM.unmountComponentAtNode(container);
-      body.removeChild(container);
-    }
-  },
+  attachStyleSheet();
+  const body = document.getElementsByTagName('body')[0];
+  const container = document.createElement('div');
+  container.id = 'pushtell-debugger';
+  body.appendChild(container);
+  debuggerRoot = createRoot(container);
+  debuggerRoot.render(<Debugger />);
+};
+
+export const disable = (): void => {
+  if (!isDebuggerAvailable || !canUseDOM) {
+    return;
+  }
+
+  removeStyleSheet();
+  const body = document.getElementsByTagName('body')[0];
+  const container = document.getElementById('pushtell-debugger');
+  if (container) {
+    debuggerRoot?.unmount();
+    body.removeChild(container);
+  }
 };

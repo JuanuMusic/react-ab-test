@@ -1,61 +1,74 @@
 import emitter from '../emitter';
-import { canUseDOM } from 'fbjs/lib/ExecutionEnvironment';
 
-let playSubscription, winSubscription;
+let enabled = false;
+let playSubscription = null;
+let winSubscription = null;
 
 export default {
   enable() {
-    if (canUseDOM) {
-      if (typeof analytics === 'undefined') {
+    if (enabled) {
+      return;
+    }
+
+    // Check if we're in a browser environment
+    const isBrowser = typeof window !== 'undefined';
+
+    if (isBrowser) {
+      if (!window.analytics) {
         const error = new Error(
           "React A/B Test Segment Helper: 'analytics' global is not defined."
         );
         error.type = 'PUSHTELL_HELPER_MISSING_GLOBAL';
         throw error;
       }
-      playSubscription = emitter.addPlayListener(function (
-        experimentName,
-        variantName
-      ) {
-        analytics.track(
-          'Experiment Viewed',
-          {
-            experimentName: experimentName,
-            variationName: variantName,
-          },
-          function () {
-            emitter.emit('segment-play', experimentName, variantName);
-          }
-        );
-      });
-      winSubscription = emitter.addWinListener(function (
-        experimentName,
-        variantName
-      ) {
-        analytics.track(
-          'Experiment Won',
-          {
-            experimentName: experimentName,
-            variationName: variantName,
-          },
-          function () {
-            emitter.emit('segment-win', experimentName, variantName);
-          }
-        );
-      });
+    } else {
+      // If not in browser, just enable without functionality
+      enabled = true;
+      return;
     }
+
+    playSubscription = emitter.addPlayListener(function (
+      experimentName,
+      variantName
+    ) {
+      window.analytics.track('Experiment Viewed', {
+        experimentName: experimentName,
+        variationName: variantName,
+      });
+    });
+
+    winSubscription = emitter.addWinListener(function (
+      experimentName,
+      variantName
+    ) {
+      window.analytics.track('Experiment Won', {
+        experimentName: experimentName,
+        variationName: variantName,
+      });
+    });
+
+    enabled = true;
   },
+
   disable() {
-    if (canUseDOM) {
-      if (!playSubscription || !winSubscription) {
-        const error = new Error(
-          'React A/B Test Segment Helper: Helper was not enabled.'
-        );
-        error.type = 'PUSHTELL_HELPER_INVALID_DISABLE';
-        throw error;
-      }
-      playSubscription.remove();
-      winSubscription.remove();
+    if (!enabled) {
+      const error = new Error(
+        'React A/B Test Segment Helper: Helper was disabled without being enabled first.'
+      );
+      error.type = 'PUSHTELL_HELPER_INVALID_DISABLE';
+      throw error;
     }
+
+    if (playSubscription) {
+      playSubscription.remove();
+      playSubscription = null;
+    }
+
+    if (winSubscription) {
+      winSubscription.remove();
+      winSubscription = null;
+    }
+
+    enabled = false;
   },
 };

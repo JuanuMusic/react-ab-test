@@ -1,15 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { mount } from 'enzyme';
 import { v4 as UUID } from 'uuid';
+import { renderWithWrapper } from '../test-utils';
 
-import CoreExperiment from '../../src/CoreExperiment.jsx';
-import Variant from '../../src/Variant.jsx';
-import emitter from '../../src/emitter.jsx';
+import CoreExperiment from '../../src/CoreExperiment';
+import Variant from '../../src/Variant';
 
 describe('Core Experiment', () => {
   it('should render the correct variant.', () => {
-    const wrapper = mount(
+    const wrapper = renderWithWrapper(
       <CoreExperiment name={UUID()} defaultVariantName="A">
         <Variant name="A">
           <div id="variant-a" />
@@ -28,7 +26,7 @@ describe('Core Experiment', () => {
     // Suppress React's error boundary logs
     jest.spyOn(console, 'error').mockImplementation(() => {});
     expect(() => {
-      mount(
+      renderWithWrapper(
         <CoreExperiment name={UUID()} defaultVariantName="A">
           <Variant name="A">
             <div id="variant-a" />
@@ -36,14 +34,13 @@ describe('Core Experiment', () => {
           <div />
         </CoreExperiment>
       );
-    }).toThrowError(
-      'Pushtell Experiment children must be Pushtell Variant components',
-      'PUSHTELL_INVALID_CHILD'
+    }).toThrow(
+      'Pushtell Experiment children must be Pushtell Variant components'
     );
   });
 
   it('should update on componentWillReceiveProps.', () => {
-    const wrapper = mount(
+    const wrapper = renderWithWrapper(
       <CoreExperiment name={UUID()} defaultVariantName="A">
         <Variant name="A">
           <div id="variant-a" />
@@ -86,7 +83,7 @@ describe('Core Experiment', () => {
     const originalText = 'original text';
     const newText = 'original text';
 
-    const wrapper = mount(<App text={originalText} />);
+    const wrapper = renderWithWrapper(<App text={originalText} />);
     expect(wrapper.find('#variant-a-text').text()).toBe(originalText);
     wrapper.setProps({ text: newText });
     expect(wrapper.find('#variant-a-text').text()).toBe(newText);

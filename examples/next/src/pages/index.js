@@ -3,10 +3,9 @@ import { v4 as UUID } from 'uuid';
 
 import Experiment from '../../../../lib/Experiment';
 import Variant from '../../../../lib/Variant';
-import experimentDebugger from '../../../../lib/debugger';
 import abTestsEmitter from '../../../../lib/emitter';
 // Normally the library would be imported with:
-// import { Experiment, Variant, experimentDebugger, emitter } from '@marvelapp/react-ab-test'
+// import { Experiment, Variant, experimentDebugger, emitter } from '@juanu/react-ab-test'
 
 export default function Home({ userIdentifier }) {
   return <AbTest userIdentifier={userIdentifier} />;
